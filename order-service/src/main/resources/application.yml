@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: order-service
+
+inventory:
+  service:
+    url: http://localhost:8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+# LAB STEP 2: uncomment to enable Prometheus metrics + latency histograms (Grafana p50/p95/p99 panels)
+#  metrics:
+#    export:
+#      prometheus:
+#        enabled: true
+#    distribution:
+#      percentiles-histogram:
+#        http.server.requests: true
+
+logging:
+  level:
+    com.bny.spark26: INFO
+
+# LAB STEP 3: uncomment to send traces/metrics/logs to the OTel Collector
+# (4318 = OTLP over HTTP, which is what the Spring Boot starter uses by default)
+#otel:
+#  exporter:
+#    otlp:
+#      endpoint: http://localhost:4318
+#  service:
+#    name: order-service

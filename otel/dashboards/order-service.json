@@ -1,0 +1,89 @@
+{
+  "title": "Order Service — SPARK26 Lab",
+  "uid": "spark26-orders",
+  "version": 1,
+  "schemaVersion": 39,
+  "refresh": "10s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{job=\"order-service\"}[1m])",
+          "legendFormat": "{{uri}} {{method}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "p99 Latency (seconds)",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket{job=\"order-service\"}[1m]))",
+          "legendFormat": "p99 {{uri}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Error Rate (%)",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{job=\"order-service\",status=~\"5..\"}[1m]) / rate(http_server_requests_seconds_count{job=\"order-service\"}[1m]) * 100",
+          "legendFormat": "Error %"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "🔍 LAB: Find the Latency Bug — p50 vs p95 vs p99",
+      "description": "When p99 spikes but p50 stays flat, only ~20% of requests are slow. Metrics alone won't tell you WHY. Use Jaeger to trace a slow request.",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(http_server_requests_seconds_bucket{job=\"order-service\",uri=\"/orders\"}[1m]))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{job=\"order-service\",uri=\"/orders\"}[1m]))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket{job=\"order-service\",uri=\"/orders\"}[1m]))",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "🔍 LAB: JVM Memory — Spot the trend",
+      "description": "Watch for memory growing over time. Metrics show the trend; traces show which operation is leaking.",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{job=\"order-service\",area=\"heap\"}",
+          "legendFormat": "Heap Used"
+        },
+        {
+          "expr": "jvm_memory_max_bytes{job=\"order-service\",area=\"heap\"}",
+          "legendFormat": "Heap Max"
+        }
+      ]
+    }
+  ]
+}
